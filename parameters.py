@@ -1,8 +1,9 @@
 # Окно
 CAPTION = "Brownian motion"
-SIDE    = 900
+WIDTH   = 900
+HEIGHT  = WIDTH
 ICON    = "icon.ico"
-FILL    = (255, 255, 255)
+FILL    = (0, 0, 0)
 
 # Физика
 V      = 10
@@ -10,4 +11,4 @@ MASS   = 100
 RADIUS = 15
 
 # Частицы
-COLOR = (0, 0, 0)
+COLOR = (255, 255, 255)

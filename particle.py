@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from coordinates import Coordinates, TrajectoryPoint
-from parameters import SIDE
+import parameters as prms
 
 
 @dataclass
@@ -27,17 +27,19 @@ class Particle:
     def check_collision(self, particles: list[Particle]):
         if (
             self.coords.x - self.radius < 0    and self.Vᵪ < 0 or
-            self.coords.x + self.radius > SIDE and self.Vᵪ > 0
+            self.coords.x + self.radius > prms.WIDTH and self.Vᵪ > 0
         ):
             self.Vᵪ *= -1
             self.coords.x += int(self.Vᵪ * 1.2)
+            return
 
         if (
             self.coords.y - self.radius < 0    and self.Vᵧ > 0 or
-            self.coords.y + self.radius > SIDE and self.Vᵧ < 0
+            self.coords.y + self.radius > prms.HEIGHT and self.Vᵧ < 0
         ):
             self.Vᵧ *= -1
             self.coords.y -= int(self.Vᵧ * 1.2)
+            return
 
         for another in particles:
             if (
@@ -61,7 +63,7 @@ class Particle:
 
     def __rshift__(self, another: Particle) -> float:
         distance = (
-            (another.coords.x - self.coords.x)**2 + 
+            (another.coords.x - self.coords.x)**2 +
             (another.coords.y - self.coords.y)**2
         )**.5
 
