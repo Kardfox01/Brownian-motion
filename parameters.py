@@ -3,12 +3,12 @@ CAPTION = "Brownian motion"
 WIDTH   = 900
 HEIGHT  = WIDTH
 ICON    = "icon.ico"
-FILL    = (0, 0, 0)
+FILL    = (255, 255, 255)
 
 # Физика
-V      = 10
+V      = 12
 MASS   = 100
 RADIUS = 15
 
 # Частицы
-COLOR = (255, 255, 255)
+COLOR = (0, 0, 0)

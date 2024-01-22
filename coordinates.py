@@ -13,5 +13,6 @@ class Coordinates:
 
 @dataclass
 class TrajectoryPoint:
-    coords: tuple[int, int]
-    color: tuple[int, int, int]
+    coords_start: tuple[int, int]
+    coords_end  : tuple[int, int]
+    color       : tuple[int, int, int]

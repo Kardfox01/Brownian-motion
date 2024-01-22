@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from coordinates import Coordinates, TrajectoryPoint
-import parameters as prms
+import parameters as ps
 
 
 @dataclass
@@ -10,56 +10,54 @@ class Particle:
     uid       : int
     radius    : int
     m         : int
-    Vᵪ        : int
-    Vᵧ        : int
+    Vx        : int
+    Vy        : int
     coords    : Coordinates
     color     : tuple[int, int, int]
     trajectory: list[TrajectoryPoint] = field(default_factory=list)
 
     collided: bool = False
+    show    : bool = True
 
     def movement(self):
-        self.coords.x += int(self.Vᵪ)
-        self.coords.y -= int(self.Vᵧ)
+        self.coords.x += int(self.Vx)
+        self.coords.y -= int(self.Vy)
 
         self.collided = False
 
     def check_collision(self, particles: list[Particle]):
         if (
-            self.coords.x - self.radius < 0    and self.Vᵪ < 0 or
-            self.coords.x + self.radius > prms.WIDTH and self.Vᵪ > 0
+            self.coords.x - self.radius < 0          and self.Vx < 0 or
+            self.coords.x + self.radius > ps.WIDTH and self.Vx > 0
         ):
-            self.Vᵪ *= -1
-            self.coords.x += int(self.Vᵪ * 1.2)
+            self.Vx *= -1
+            self.coords.x += int(self.Vx * 1.2)
             return
 
         if (
-            self.coords.y - self.radius < 0    and self.Vᵧ > 0 or
-            self.coords.y + self.radius > prms.HEIGHT and self.Vᵧ < 0
+            self.coords.y - self.radius < 0           and self.Vy > 0 or
+            self.coords.y + self.radius > ps.HEIGHT and self.Vy < 0
         ):
-            self.Vᵧ *= -1
-            self.coords.y -= int(self.Vᵧ * 1.2)
+            self.Vy *= -1
+            self.coords.y -= int(self.Vy * 1.2)
             return
 
-        for another in particles:
-            if (
-                self >> another <= self.radius + another.radius and
-                not self is another and
-                not self.collided
-            ):
-                _Vᵪ = self.Vᵪ
-                _Vᵧ = self.Vᵧ
+        if not self.collided:
+            for another in particles:
+                if not self is another and self >> another:
+                    _Vx = self.Vx
+                    _Vy = self.Vy
 
-                self.Vᵪ = (2*another.m*another.Vᵪ + self.Vᵪ*(self.m - another.m)) // (self.m + another.m)
-                self.Vᵧ = (2*another.m*another.Vᵧ + self.Vᵧ*(self.m - another.m)) // (self.m + another.m)
+                    self.Vx = (2*another.m*another.Vx + self.Vx*(self.m - another.m)) // (self.m + another.m)
+                    self.Vy = (2*another.m*another.Vy + self.Vy*(self.m - another.m)) // (self.m + another.m)
 
-                another.Vᵪ = (2*self.m*_Vᵪ + _Vᵪ*(another.m - self.m)) // (self.m + another.m)
-                another.Vᵧ = (2*self.m*_Vᵧ + _Vᵧ*(another.m - self.m)) // (self.m + another.m)
+                    another.Vx = (2*self.m*_Vx + _Vx*(another.m - self.m)) // (self.m + another.m)
+                    another.Vy = (2*self.m*_Vy + _Vy*(another.m - self.m)) // (self.m + another.m)
 
-                self.coords.x += int(self.Vᵪ * 1.2)
-                self.coords.y -= int(self.Vᵧ * 1.2)
+                    self.coords.x += int(self.Vx * 1.2)
+                    self.coords.y -= int(self.Vy * 1.2)
 
-                another.collided = True
+                    another.collided = True
 
     def __rshift__(self, another: Particle) -> float:
         distance = (
@@ -68,5 +66,7 @@ class Particle:
         )**.5
 
         if type(distance) != complex:
-            return distance
-        return 0
+            if distance <= self.radius + another.radius:
+                return True
+            return False
+        return True
