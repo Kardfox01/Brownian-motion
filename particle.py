@@ -27,7 +27,7 @@ class Particle:
 
     def check_collision(self, particles: list[Particle]):
         if (
-            self.coords.x - self.radius < 0          and self.Vx < 0 or
+            self.coords.x - self.radius < 0        and self.Vx < 0 or
             self.coords.x + self.radius > ps.WIDTH and self.Vx > 0
         ):
             self.Vx *= -1
@@ -35,7 +35,7 @@ class Particle:
             return
 
         if (
-            self.coords.y - self.radius < 0           and self.Vy > 0 or
+            self.coords.y - self.radius < 0         and self.Vy > 0 or
             self.coords.y + self.radius > ps.HEIGHT and self.Vy < 0
         ):
             self.Vy *= -1

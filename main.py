@@ -2,13 +2,11 @@ from os import environ, system
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 
 import pygame as pg
+import parameters as ps
 
 from threading import Thread
 from random import randint as rd
 from time import time, sleep
-from colorama import just_fix_windows_console, Fore
-
-import parameters as ps
 from particle import Particle
 from coordinates import Coordinates, TrajectoryPoint
 
@@ -39,7 +37,7 @@ class BrownianMotionApp:
                     (event.type == pg.KEYUP and event.key == pg.K_ESCAPE)) and
                     not self.__cmd
                 ):
-                    self.stop()
+                    self.exit()
                 elif event.type == pg.VIDEORESIZE:
                     ps.WIDTH, ps.HEIGHT = event.w, event.h
                     self.__screen = pg.display.set_mode((ps.WIDTH, ps.HEIGHT), pg.RESIZABLE)
@@ -77,7 +75,9 @@ class BrownianMotionApp:
 
             half_count = len(self.__particles) // 2
 
-            Thread(target=move, args=(self.__particles[half_count:],)).start()
+            thread1 = Thread(target=move, args=(self.__particles[half_count:],))
+            thread1.start()
+            thread1.join()
 
             thread2 = Thread(target=move, args=(self.__particles[:half_count],))
             thread2.start()
@@ -87,52 +87,41 @@ class BrownianMotionApp:
             clock.tick(75)
         pg.quit()
 
-    def add(self, N: int):
-        for _ in range(N):
-            self.create(
-                ps.RADIUS,
-                ps.MASS,
-                rd(-ps.V, ps.V),
-                rd(-ps.V, ps.V),
-                *ps.COLOR
-            )
+    def create(self, *args: int):
+        N = args[0]
+        radius, mass, Vx, Vy, r, g, b = ps.RADIUS, ps.MASS, None, None, *ps.COLOR
 
-    def create(
-        self,
-        radius : int,
-        mass   : int,
-        Vx     : int,
-        Vy     : int,
-        r: int,
-        g: int,
-        b: int
-    ):
-        self.__particles.append(
-            Particle(
-                len(self.__particles),
-                radius,
-                mass,
-                Vx,
-                Vy,
-                Coordinates(
-                    rd(radius, ps.WIDTH - radius*2),
-                    rd(radius, ps.HEIGHT - radius*2)
-                ),
-                (r, g, b)
+        if len(args) > 1:
+            N = 1
+            radius, mass, Vx, Vy, r, g, b = args
+
+        for _ in range(N):
+            self.__particles.append(
+                Particle(
+                    len(self.__particles),
+                    radius,
+                    mass,
+                    Vx if Vx != None else rd(-ps.V, ps.V),
+                    Vy if Vy != None else rd(-ps.V, ps.V),
+                    Coordinates(
+                        rd(radius, ps.WIDTH - radius*2),
+                        rd(radius, ps.HEIGHT - radius*2)
+                    ),
+                    (r, g, b)
+                )
             )
-        )
 
         return f"UID: {len(self.__particles) - 1}"
-
     def count(self):
         return len(self.__particles)
 
-    def highlight(self, *uid: int):
+    def highlight(self, uid: int):
         for particle in self.__particles:
-            if not particle.uid in uid:
+            if particle.uid != uid:
                 particle.show = False
 
     def track(self, seconds: int, uid: int):
+        self.highlight(uid)
         self.__pause = False
 
         particle = self.__particles[uid]
@@ -162,35 +151,34 @@ class BrownianMotionApp:
                 )
             )
 
-        self.pause()
-
+        self.stop()
     def reset(self):
         for particle in self.__particles:
             particle.show = True
             particle.trajectory.clear()
 
-    def pause(self):
+    def stop(self):
         self.__pause = not self.__pause
 
-    def stop(self):
+    def exit(self):
         self.__running = False
 
     def cli(self):
         if self.__cmd:
             commands = {
                 "создать" : self.create,            # создать RADIUS MASS VX VY R G B - добавляет 1 частицу с заданными параметрами
-                "добавить": self.add,               # создатьмн N                     - добавляет N обычных частиц
+                                                    # создать N                       - создаёт N-ое количество частиц с параметрами по-умолчанию
                 "очистить": self.__particles.clear, # очистить                        - удаляет все частицы
                 "кол-во"  : self.count,             # кол-во                          - выводит кол-во частиц на экране
                 "выделить": self.highlight,         # выделить UIDS                   - прячет все частицы, кроме указанных
                 "следить" : self.track,             # отслеживать SECONDS UID         - рисует траекторию указанной частицы SECONDS секунд
-                "пауза"   : self.pause,             # пауза                           - останавливает движение
-                "стоп"    : self.stop,              # стоп                            - останавливает приложение
+                "стоп"    : self.stop,              # пауза                           - останавливает движение
+                "выход"   : self.exit,              # стоп                            - останавливает приложение
                 "сброс"   : self.reset              # сброс                           - сбрасывает изменения после / выделить / или / следить /
             }
 
             while self.__running:
-                promt = input(Fore.LIGHTCYAN_EX + ">>> ").split()
+                promt = input(ps.PROMT).split()
                 try:
                     command, args = promt[0], (int(arg) for arg in promt[1:])
                     result = commands[command](*args)
@@ -199,10 +187,10 @@ class BrownianMotionApp:
                     print("Такой команды не существует")
                 except Exception as e:
                     print(e)
-            print(f"Выход...{Fore.RESET}")
+            print(f"Выход...{ps.Style.RESET_ALL}")
             return
 
-        just_fix_windows_console()
+        ps.just_fix_windows_console()
         system("cls")
         self.__cmd = True
         Thread(target=self.cli).start()
