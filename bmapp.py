@@ -7,6 +7,7 @@ import parameters as ps
 from threading import Thread
 from random import randint as rd
 from time import time, sleep
+from colorama import Fore, Style, just_fix_windows_console
 from particle import Particle
 from coordinates import Coordinates, TrajectoryPoint
 
@@ -15,12 +16,12 @@ class BrownianMotionApp:
     def __init__(self):
         pg.init()
 
-        self.__screen    : pg.Surface = pg.display.set_mode((ps.WIDTH, ps.HEIGHT), pg.RESIZABLE)
-        self.__particles : list[Particle] = []
+        self.__screen   : pg.Surface = pg.display.set_mode((ps.WIDTH, ps.HEIGHT), pg.RESIZABLE)
+        self.__particles: list[Particle] = []
 
-        self.__running    = True
-        self.__pause      = False
-        self.__cmd        = False
+        self.__running = True
+        self.__pause   = False
+        self.__cmd     = False
 
         pg.display.set_caption(ps.CAPTION)
         pg.display.set_icon(pg.image.load(ps.ICON))
@@ -32,11 +33,7 @@ class BrownianMotionApp:
             self.__screen.fill(ps.FILL)
 
             for event in pg.event.get():
-                if (
-                    (event.type == pg.QUIT  or
-                    (event.type == pg.KEYUP and event.key == pg.K_ESCAPE)) and
-                    not self.__cmd
-                ):
+                if event.type == pg.QUIT and not self.__cmd:
                     self.exit()
                 elif event.type == pg.VIDEORESIZE:
                     ps.WIDTH, ps.HEIGHT = event.w, event.h
@@ -111,7 +108,8 @@ class BrownianMotionApp:
                 )
             )
 
-        return f"UID: {len(self.__particles) - 1}"
+        if N == 1:
+            return f"UID: {len(self.__particles) - 1}"
     def count(self):
         return len(self.__particles)
 
@@ -164,21 +162,36 @@ class BrownianMotionApp:
         self.__running = False
 
     def cli(self):
+        HELP = f"""
+        {Fore.CYAN}создать{Fore.WHITE} {Fore.GREEN}RADIUS MASS VX VY R G B{Fore.WHITE} - добавляет 1 частицу с заданными параметрами
+        {Fore.CYAN}создать{Fore.WHITE} {Fore.GREEN}N{Fore.WHITE}                       - создаёт {Fore.GREEN}N{Fore.WHITE} частиц с параметрами по-умолчанию
+        {Fore.CYAN}очистить{Fore.WHITE}                        - удаляет все частицы
+        {Fore.CYAN}кол-во{Fore.WHITE}                          - выводит кол-во частиц на экране
+        {Fore.CYAN}выделить{Fore.WHITE} {Fore.GREEN}UIDS{Fore.WHITE}                   - прячет все частицы, кроме {Fore.GREEN}UIDS{Fore.WHITE}
+        {Fore.CYAN}отслеживать{Fore.WHITE} {Fore.GREEN}SECONDS UID{Fore.WHITE}         - рисует траекторию частицы {Fore.GREEN}UID SECONDS{Fore.WHITE} секунд
+        {Fore.CYAN}стоп{Fore.WHITE}                            - останавливает движение
+        {Fore.CYAN}выход{Fore.WHITE}                           - выход из приложения
+        {Fore.CYAN}сброс{Fore.WHITE}                           - сбрасывает изменения после {Fore.CYAN}выделить{Fore.WHITE} или {Fore.CYAN}следить{Fore.WHITE}
+        {Fore.CYAN}помощь{Fore.WHITE}                          - вывод справки
+        """
+
+        PROMT = f"{Style.NORMAL}{Fore.CYAN}>>> {Fore.RESET}{Style.BRIGHT}"
+
         if self.__cmd:
             commands = {
-                "создать" : self.create,            # создать RADIUS MASS VX VY R G B - добавляет 1 частицу с заданными параметрами
-                                                    # создать N                       - создаёт N-ое количество частиц с параметрами по-умолчанию
-                "очистить": self.__particles.clear, # очистить                        - удаляет все частицы
-                "кол-во"  : self.count,             # кол-во                          - выводит кол-во частиц на экране
-                "выделить": self.highlight,         # выделить UIDS                   - прячет все частицы, кроме указанных
-                "следить" : self.track,             # отслеживать SECONDS UID         - рисует траекторию указанной частицы SECONDS секунд
-                "стоп"    : self.stop,              # пауза                           - останавливает движение
-                "выход"   : self.exit,              # стоп                            - останавливает приложение
-                "сброс"   : self.reset              # сброс                           - сбрасывает изменения после / выделить / или / следить /
+                "создать" : self.create,
+                "очистить": self.__particles.clear,
+                "кол-во"  : self.count,
+                "выделить": self.highlight,
+                "следить" : self.track,
+                "стоп"    : self.stop,
+                "выход"   : self.exit,
+                "сброс"   : self.reset,
+                "помощь"  : lambda: HELP
             }
 
             while self.__running:
-                promt = input(ps.PROMT).split()
+                promt = input(PROMT).split()
                 try:
                     command, args = promt[0], (int(arg) for arg in promt[1:])
                     result = commands[command](*args)
@@ -187,10 +200,10 @@ class BrownianMotionApp:
                     print("Такой команды не существует")
                 except Exception as e:
                     print(e)
-            print(f"Выход...{ps.Style.RESET_ALL}")
+            print(f"Выход...{Style.RESET_ALL}")
             return
 
-        ps.just_fix_windows_console()
+        just_fix_windows_console()
         system("cls")
         self.__cmd = True
         Thread(target=self.cli).start()
