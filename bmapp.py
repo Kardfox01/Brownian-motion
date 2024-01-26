@@ -154,6 +154,7 @@ class BrownianMotionApp:
         for particle in self.__particles:
             particle.show = True
             particle.trajectory.clear()
+        self.__pause = True
 
     def stop(self):
         self.__pause = not self.__pause
