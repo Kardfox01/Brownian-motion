@@ -31,7 +31,6 @@ class Particle:
             self.coords.x + self.radius > ps.WIDTH and self.Vx > 0
         ):
             self.Vx *= -1
-            self.coords.x += int(self.Vx * 1.2)
             return
 
         if (
@@ -39,7 +38,6 @@ class Particle:
             self.coords.y + self.radius > ps.HEIGHT and self.Vy < 0
         ):
             self.Vy *= -1
-            self.coords.y -= int(self.Vy * 1.2)
             return
 
         if not self.collided:
@@ -54,8 +52,8 @@ class Particle:
                     another.Vx = (2*self.m*_Vx + _Vx*(another.m - self.m)) // (self.m + another.m)
                     another.Vy = (2*self.m*_Vy + _Vy*(another.m - self.m)) // (self.m + another.m)
 
-                    self.coords.x += int(self.Vx * 1.2)
-                    self.coords.y -= int(self.Vy * 1.2)
+                    self.coords.x += int(self.Vx * 1.1)
+                    self.coords.y -= int(self.Vy * 1.1)
 
                     another.collided = True
                     break
