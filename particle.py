@@ -58,6 +58,7 @@ class Particle:
                     self.coords.y -= int(self.Vy * 1.2)
 
                     another.collided = True
+                    break
 
     def __rshift__(self, another: Particle) -> float:
         distance = (
