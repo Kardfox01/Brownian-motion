@@ -15,8 +15,10 @@ from coordinates import Coordinates, TrajectoryPoint
 class BrownianMotionApp:
     def __init__(self):
         pg.init()
+        pg.event.set_allowed((pg.QUIT, pg.VIDEORESIZE))
 
         self.__screen   : pg.Surface = pg.display.set_mode((ps.WIDTH, ps.HEIGHT), pg.RESIZABLE)
+        self.__screen.set_alpha(None)
         self.__particles: list[Particle] = []
 
         self.__running = True
@@ -81,7 +83,7 @@ class BrownianMotionApp:
             thread2.join()
 
             pg.display.update()
-            clock.tick(75)
+            clock.tick(30)
         pg.quit()
 
     def create(self, *args: int):
@@ -150,11 +152,12 @@ class BrownianMotionApp:
             )
 
         self.stop()
+
     def reset(self):
         for particle in self.__particles:
             particle.show = True
             particle.trajectory.clear()
-        self.__pause = True
+        self.__pause = False
 
     def stop(self):
         self.__pause = not self.__pause

@@ -1,12 +1,12 @@
 # Окно
 CAPTION = "Brownian motion"
-WIDTH   = 500
+WIDTH   = 600
 HEIGHT  = WIDTH
 ICON    = "icon.ico"
 FILL    = (255, 255, 255)
 
 # Физика
-V      = 10
+V      = 15
 MASS   = 100
 RADIUS = 15
 
